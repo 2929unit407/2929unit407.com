@@ -1265,7 +1265,7 @@ footer {
       <div class="calc-field">
         <div class="calc-field-val" id="calcDown">20% $47,980</div>
         <label>Down Payment</label>
-        <input type="range" id="rDown" min="5" max="30" value="20" step="1" oninput="calcUpdate()">
+        <input type="range" id="rDown" min="0" max="100" value="20" step="1" oninput="calcUpdate()">
       </div>
       <div class="calc-field">
         <div class="calc-field-val" id="calcRate">6.00%</div>
@@ -1775,39 +1775,62 @@ function calcUpdate() {
   const downPct = +document.getElementById('rDown').value;
   const rate = +document.getElementById('rRate').value;
   const rent = +document.getElementById('rRent').value;
-  
+
   const down = price * downPct / 100;
   const loan = price - down;
-  const monthly_rate = rate / 100 / 12;
-  const n = 360;
-  const mortgage = loan * (monthly_rate * Math.pow(1 + monthly_rate, n)) / (Math.pow(1 + monthly_rate, n) - 1);
   const tax = price * 0.0117 / 12;
   const hoa = 446;
   const ins = 42;
-  const total = mortgage + hoa + tax + ins;
-  
-  // Equity after 5 years (simple principal paydown)
-  let bal = loan;
-  for(let i=0;i<60;i++) {
-    const interest = bal * monthly_rate;
-    const principal = mortgage - interest;
-    bal -= principal;
+
+  let mortgage = 0;
+  let equity = 0;
+
+  if (loan > 0 && rate > 0) {
+    const monthly_rate = rate / 100 / 12;
+    const n = 360;
+    mortgage = loan * (monthly_rate * Math.pow(1 + monthly_rate, n)) / (Math.pow(1 + monthly_rate, n) - 1);
+    // Principal paydown over 5 years
+    let bal = loan;
+    for (let i = 0; i < 60; i++) {
+      const interest = bal * monthly_rate;
+      const principal = mortgage - interest;
+      bal -= principal;
+    }
+    equity = loan - bal;
   }
-  const equity = loan - bal;
-  
+
+  const total = mortgage + hoa + tax + ins;
   const ownTotal = total * 60;
   const rentTotal = rent * 60;
   const savings = rentTotal - ownTotal + equity;
-  
+
+  // Down payment label
+  let downLabel = '';
+  if (downPct === 100) {
+    downLabel = '100% Cash — No Mortgage';
+  } else {
+    downLabel = downPct + '% — $' + Math.round(down).toLocaleString();
+  }
+
+  // Mortgage line label
+  let mortgageLabel = downPct === 100 ? '$0 (Paid in Full)' : '$' + Math.round(mortgage).toLocaleString();
+
+  // Monthly total label — at 100% down only taxes + HOA + insurance
+  let totalLabel = '$' + Math.round(total).toLocaleString();
+  let totalSub = downPct === 100
+    ? 'HOA + Property Tax + Insurance Only'
+    : 'Mortgage + HOA + Tax + Insurance';
+
   document.getElementById('calcPrice').textContent = '$' + price.toLocaleString();
-  document.getElementById('calcDown').textContent = downPct + '% $' + Math.round(down).toLocaleString();
-  document.getElementById('calcRate').textContent = rate.toFixed(2) + '%';
+  document.getElementById('calcDown').textContent = downLabel;
+  document.getElementById('calcRate').textContent = downPct === 100 ? 'N/A — Cash Purchase' : rate.toFixed(2) + '%';
   document.getElementById('calcRent').textContent = '$' + rent.toLocaleString();
-  document.getElementById('calcTotal').textContent = '$' + Math.round(total).toLocaleString();
-  document.getElementById('cMortgage').textContent = '$' + Math.round(mortgage).toLocaleString();
+  document.getElementById('calcTotal').textContent = totalLabel;
+  document.querySelector('.result-sub').textContent = totalSub;
+  document.getElementById('cMortgage').textContent = mortgageLabel;
   document.getElementById('cTax').textContent = '$' + Math.round(tax).toLocaleString();
   document.getElementById('cDownAmt').textContent = '$' + Math.round(down).toLocaleString();
-  document.getElementById('cEquity').textContent = '$' + Math.round(equity).toLocaleString() + '+';
+  document.getElementById('cEquity').textContent = downPct === 100 ? '$0 (No Loan)' : '$' + Math.round(equity).toLocaleString() + '+';
   document.getElementById('cRentTotal').textContent = '$' + Math.round(rentTotal).toLocaleString();
   document.getElementById('cOwnTotal').textContent = '$' + Math.round(ownTotal).toLocaleString();
   document.getElementById('cSavings').textContent = '$' + Math.round(savings).toLocaleString() + '+';
