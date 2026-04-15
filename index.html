@@ -1551,8 +1551,8 @@ src="https://www.facebook.com/tr?id=1238450708278053&ev=PageView&noscript=1"
   <div class="footer-logo">Corridor Flats &nbsp;|&nbsp; Unit 407</div>
   <div class="footer-contact">
     2929 21st Ave S #407, Minneapolis MN 55407 &nbsp;|&nbsp;
-    <a href="mailto:Listing@2929unit407.com">Listing@2929unit407.com</a> &nbsp;|&nbsp;
-    <a href="tel:+18884002513">(888) 400-2513</a>
+    <a href="mailto:Listing@2929unit407.com" onclick="if(typeof fbq==='function')fbq('track','Contact');">Listing@2929unit407.com</a> &nbsp;|&nbsp;
+    <a href="tel:+18884002513" onclick="if(typeof fbq==='function')fbq('track','Contact');">(888) 400-2513</a>
   </div>
   <div class="footer-legal">Equal Housing Opportunity &nbsp;|&nbsp; &copy; 2026 2929unit407.com</div>
 </footer>
@@ -1806,6 +1806,7 @@ function submitForm(e) {
     if (json.success) {
       form.style.display = 'none';
       document.getElementById('formSuccess').style.display = 'block';
+      if (typeof fbq === 'function') { fbq('track', 'Lead'); }
     } else {
       submitBtn.disabled = false;
       submitBtn.textContent = 'Submit Showing Request';
