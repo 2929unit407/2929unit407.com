@@ -292,6 +292,13 @@ async function shareListing() {
     text: 'Top-floor 2BR condo, $239,900. 1,098 sq ft. Sunday showings available.',
     url: 'https://2929unit407.com/book'
   };
+  if (typeof fbq === 'function') {
+    fbq('trackCustom', 'ShareClick', {
+      content_name: '2929 Unit 407',
+      content_category: 'listing',
+      method: navigator.share ? 'native_share_sheet' : 'clipboard_fallback'
+    });
+  }
   if (navigator.share) {
     try {
       await navigator.share(shareData);
