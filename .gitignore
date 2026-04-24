@@ -1,0 +1,7 @@
+# macOS Finder metadata
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Local PDF backups (not meant for the repo)
+*.pre_patch.pdf
