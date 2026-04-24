@@ -1829,5 +1829,100 @@ const observer = new IntersectionObserver((entries) => {
 });
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 </script>
+
+<!-- Floating Share + QR widget -->
+<style>
+#share-fab { position: fixed; right: 18px; bottom: 18px; z-index: 9999; font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
+#share-fab .fab-trigger { width: 54px; height: 54px; border-radius: 50%; background: #1B2A3B; color: #c9a96e; border: 2px solid #c9a96e; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,0.22); display: flex; align-items: center; justify-content: center; transition: transform 0.15s, box-shadow 0.15s; padding: 0; }
+#share-fab .fab-trigger:hover { transform: scale(1.06); box-shadow: 0 8px 26px rgba(0,0,0,0.28); }
+#share-fab .fab-trigger:focus { outline: 2px solid #c9a96e; outline-offset: 3px; }
+#share-fab .fab-trigger svg { width: 24px; height: 24px; }
+#share-fab .fab-panel { position: absolute; right: 0; bottom: 66px; width: 260px; background: #fff; border-radius: 14px; box-shadow: 0 18px 44px rgba(0,0,0,0.26); padding: 20px 18px 18px; opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity 0.2s, transform 0.2s; }
+#share-fab.open .fab-panel { opacity: 1; transform: translateY(0); pointer-events: auto; }
+#share-fab .fab-close { position: absolute; top: 6px; right: 10px; background: transparent; border: 0; font-size: 22px; color: #9aa3af; cursor: pointer; line-height: 1; padding: 4px 8px; }
+#share-fab .fab-close:hover { color: #1B2A3B; }
+#share-fab .fab-title { font-weight: 700; font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: #1B2A3B; margin: 0 0 12px; text-align: center; }
+#share-fab .fab-qr { width: 100%; height: auto; display: block; border-radius: 6px; background: #fff; }
+#share-fab .fab-hint { text-align: center; font-size: 0.72rem; color: #6b7280; margin: 8px 0 14px; line-height: 1.45; }
+#share-fab .fab-share-btn { width: 100%; padding: 11px 12px; background: #1B2A3B; color: #fff; border: 0; border-radius: 7px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; transition: background 0.15s; }
+#share-fab .fab-share-btn:hover { background: #2a3c54; }
+#share-fab .fab-share-btn svg { width: 14px; height: 14px; }
+#share-fab .fab-copied { background: #c9a96e !important; color: #1B2A3B !important; }
+@media (max-width: 520px) {
+  #share-fab { right: 14px; bottom: 14px; }
+  #share-fab .fab-panel { width: calc(100vw - 28px); right: -4px; }
+}
+@media print { #share-fab { display: none; } }
+</style>
+<div id="share-fab" aria-live="polite">
+  <button type="button" class="fab-trigger" id="fabTrigger" aria-label="Share this listing" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 3v13"/>
+      <path d="M7 8l5-5 5 5"/>
+      <path d="M5 12v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8"/>
+    </svg>
+  </button>
+  <div class="fab-panel" role="dialog" aria-label="Share listing">
+    <button type="button" class="fab-close" id="fabClose" aria-label="Close">&times;</button>
+    <div class="fab-title">Share this listing</div>
+    <img src="/images/qr_share.png" alt="QR code for 2929unit407.com" class="fab-qr" loading="lazy" width="400" height="400">
+    <div class="fab-hint">Hold any phone camera over the code<br>or tap below to send via text or email.</div>
+    <button type="button" class="fab-share-btn" id="fabShareBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 3v13"/>
+        <path d="M7 8l5-5 5 5"/>
+        <path d="M5 12v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8"/>
+      </svg>
+      <span id="fabShareLabel">Share link</span>
+    </button>
+  </div>
+</div>
+<script>
+(function(){
+  const fab = document.getElementById('share-fab');
+  const trigger = document.getElementById('fabTrigger');
+  const closeBtn = document.getElementById('fabClose');
+  const shareBtn = document.getElementById('fabShareBtn');
+  const label = document.getElementById('fabShareLabel');
+  function setOpen(v){
+    fab.classList.toggle('open', v);
+    trigger.setAttribute('aria-expanded', v ? 'true' : 'false');
+  }
+  trigger.addEventListener('click', e => { e.stopPropagation(); setOpen(!fab.classList.contains('open')); });
+  closeBtn.addEventListener('click', e => { e.stopPropagation(); setOpen(false); });
+  document.addEventListener('click', e => { if (!fab.contains(e.target)) setOpen(false); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') setOpen(false); });
+  shareBtn.addEventListener('click', async () => {
+    const data = {
+      title: '2929 Unit 407 · Minneapolis',
+      text: 'Top-floor 2BR condo, $239,900. 1,098 sq ft. Blue Line access.',
+      url: 'https://2929unit407.com'
+    };
+    if (typeof fbq === 'function') {
+      fbq('trackCustom', 'ShareClick', {
+        content_name: '2929 Unit 407',
+        content_category: 'listing',
+        method: navigator.share ? 'native_share_sheet' : 'clipboard_fallback',
+        source_page: 'main_site'
+      });
+    }
+    if (navigator.share) {
+      try { await navigator.share(data); } catch (err) {}
+      setOpen(false);
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(data.url);
+      shareBtn.classList.add('fab-copied');
+      label.textContent = 'Link copied';
+      setTimeout(() => { shareBtn.classList.remove('fab-copied'); label.textContent = 'Share link'; }, 1800);
+    } catch (err) {
+      prompt('Copy this link:', data.url);
+    }
+  });
+})();
+</script>
+<!-- End Floating Share + QR widget -->
+
 </body>
 </html>
