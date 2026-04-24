@@ -47,8 +47,19 @@ src="https://www.facebook.com/tr?id=1238450708278053&ev=PageView&noscript=1"/></
   .shell { max-width: 720px; margin: 0 auto; background: var(--white); }
 
   .topbar { background: var(--navy); color: var(--white); padding: 14px 22px; font-size: 0.82rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .topbar-right { display: flex; align-items: center; gap: 14px; }
   .topbar a { color: var(--white); text-decoration: none; font-size: 0.78rem; opacity: 0.85; }
   .topbar a:hover { opacity: 1; }
+  .share-btn {
+    background: transparent; border: 1px solid rgba(255,255,255,0.3); color: var(--white);
+    padding: 6px 12px 6px 10px; border-radius: 20px; font: inherit; font-size: 0.72rem;
+    letter-spacing: 0.1em; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .share-btn:hover, .share-btn:focus { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.6); outline: none; }
+  .share-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .share-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(60px); background: var(--navy); color: var(--white); padding: 12px 20px; border-radius: 24px; font-size: 0.85rem; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,0.18); opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 100; }
+  .share-toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
 
   .hero {
     display: grid;
@@ -136,8 +147,19 @@ src="https://www.facebook.com/tr?id=1238450708278053&ev=PageView&noscript=1"/></
 
 <div class="topbar">
   <span>2929 Unit 407</span>
-  <a href="https://2929unit407.com">Full listing &rarr;</a>
+  <div class="topbar-right">
+    <button type="button" class="share-btn" id="shareBtn" onclick="shareListing()" aria-label="Share this listing">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 3v13"/>
+        <path d="M7 8l5-5 5 5"/>
+        <path d="M5 12v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8"/>
+      </svg>
+      <span>Share</span>
+    </button>
+    <a href="https://2929unit407.com">Full listing &rarr;</a>
+  </div>
 </div>
+<div class="share-toast" id="shareToast">Link copied</div>
 
 <div class="hero">
   <img src="images/Front Building with Black Lady.jpeg" alt="Corridor Flats building, 2929 21st Ave S" loading="eager">
@@ -264,6 +286,33 @@ src="https://www.facebook.com/tr?id=1238450708278053&ev=PageView&noscript=1"/></
 </div>
 
 <script>
+async function shareListing() {
+  const shareData = {
+    title: '2929 Unit 407 \u00b7 Minneapolis',
+    text: 'Top-floor 2BR condo, $239,900. 1,098 sq ft. Sunday showings available.',
+    url: 'https://2929unit407.com/book'
+  };
+  if (navigator.share) {
+    try {
+      await navigator.share(shareData);
+    } catch (err) {
+      // User cancelled share sheet; no action needed
+    }
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(shareData.url);
+  } catch (err) {
+    prompt('Copy this link to share:', shareData.url);
+    return;
+  }
+  const toast = document.getElementById('shareToast');
+  if (toast) {
+    toast.classList.add('visible');
+    setTimeout(() => toast.classList.remove('visible'), 1800);
+  }
+}
+
 (function captureSource() {
   const params = new URLSearchParams(window.location.search);
   const src = params.get('src');
