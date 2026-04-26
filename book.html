@@ -69,15 +69,20 @@ src="https://www.facebook.com/tr?id=1238450708278053&ev=PageView&noscript=1"/></
   }
   .hero img {
     width: 100%;
-    aspect-ratio: 4 / 3;
     object-fit: cover;
+    object-position: center;
     display: block;
   }
-  /* Per-image crop focus so portraits don't show ceilings */
-  .hero img:nth-child(1) { object-position: center 38%; }  /* woman + facade */
-  .hero img:nth-child(2) { object-position: center 42%; }  /* aerial, keep skyline */
-  .hero img:nth-child(3) { object-position: center 62%; }  /* living room, skip ceiling */
-  .hero img:nth-child(4) { object-position: center 60%; }  /* bedroom, skip ceiling */
+  /* Top row: landscape building shots use 3:2 box (matches the photos' natural ratio) */
+  .hero img:nth-child(1),
+  .hero img:nth-child(2) {
+    aspect-ratio: 3 / 2;
+  }
+  /* Bottom row: portrait interior shots use 2:3 box so the FULL photo shows, no cropped ceilings or floors */
+  .hero img:nth-child(3),
+  .hero img:nth-child(4) {
+    aspect-ratio: 2 / 3;
+  }
 
   .pricecard { background: var(--white); padding: 28px 24px 22px; border-bottom: 1px solid var(--border); }
   .pricecard .eyebrow { color: var(--gold); font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; }
